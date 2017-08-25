@@ -1,3 +1,5 @@
+## Retire openstack instances ##
+
 This is tripleo specific but should work on any other openstack distributions
 
 #!/bin/bash
