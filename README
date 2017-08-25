@@ -1,0 +1,29 @@
+This is tripleo specific but should work on any other openstack distributions
+
+#!/bin/bash
+
+source /home/stack/overcloudrc-v3
+
+/usr/bin/nova list --all-tenants --fields name,created |awk -F'|' '!/ID/{print $2$4""}' > /tmp/vms
+
+yearolderdate="$(date "+%Y-%m-%d" -d "365 days ago")"
+
+while read line
+
+do vmid=/usr/bin/awk -F'T[0-9][0-9]:[0-9][0-9]:[0-9][0-9][A-Z]' '{print $1}' <<<"$line" | /usr/bin/awk '{print $1 }'
+
+createddate=`/usr/bin/awk -F'T[0-9][0-9]:[0-9][0-9]:[0-9][0-9][A-Z]' '{print $1}' <<<"$line" | /usr/bin/awk '{print $2 }'`
+
+cdate=`/usr/bin/date -d "$createddate" +%s`
+
+odate=`/usr/bin/date -d "$yearolderdate" +%s`
+
+if  [[ $odate > $cdate ]]
+    then
+    {
+    echo $vmid suspended
+    /usr/bin/nova suspend $vmid
+    }
+fi
+done </tmp/vms
+
